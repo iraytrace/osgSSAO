@@ -1,0 +1,13 @@
+#version 120
+
+varying vec4 vertColor;
+varying vec4 vertPosition;
+varying vec3 vertNormal;
+
+void main(void)
+{
+	vertColor = gl_Color;
+	vertPosition = gl_ModelViewMatrix * gl_Vertex;
+	vertNormal = normalize(gl_NormalMatrix * gl_Normal);
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+}
