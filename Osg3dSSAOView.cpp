@@ -17,6 +17,22 @@ void Osg3dSSAOView::setSSAOEnabled(bool tf)
     update();
 }
 
+struct CameraPreDrawCallback : public osg::Camera::DrawCallback
+{
+	CameraPreDrawCallback(int fboInt) :
+	_fboInt(fboInt)
+	{
+	}
+
+	virtual void operator () (const osg::Camera& /*camera*/) const
+	{
+		QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+		f->glBindFramebuffer(GL_FRAMEBUFFER, _fboInt);
+	}
+
+	int _fboInt;
+};
+
 void Osg3dSSAOView::paintGL()
 {
     // Update the camera
@@ -28,6 +44,9 @@ void Osg3dSSAOView::paintGL()
 
     cam->setViewMatrix(m_cameraModel->getModelViewMatrix() );
     cam->setProjectionMatrix(m_cameraModel->computeProjection());
+
+	int fboInt = defaultFramebufferObject();
+	cam->setPreDrawCallback(new CameraPreDrawCallback(fboInt));
 
     // Let SSAO class know that camera has changed
     m_ssao->updateProjectionMatrix(getCamera()->getProjectionMatrix());
