@@ -98,6 +98,23 @@ void Osg3dViewWithCamera::resizeGL(int width, int height)
     m_osgGraphicsWindow->resized(0,0,width,height);
 }
 
+// Camera callback that force binds an FBO
+// Used to make sure the main camera writes to the default Qt FBO
+struct CameraPreDrawCallback : public osg::Camera::DrawCallback
+{
+    CameraPreDrawCallback(int fboInt) :
+    _fboInt(fboInt)
+    {
+    }
+
+    virtual void operator () (const osg::Camera& /*camera*/) const
+    {
+        QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+        f->glBindFramebuffer(GL_FRAMEBUFFER, _fboInt);
+    }
+
+    int _fboInt;
+};
 
 void Osg3dViewWithCamera::initializeGL()
 {
@@ -135,6 +152,10 @@ void Osg3dViewWithCamera::initializeGL()
     stream << glsl_version << endl;
     stream.flush();
     qApp->setProperty("OpenGLinfo", plainString);
+
+    // Add a callback to the main camera to make it use the default Qt framebuffer
+    int fboInt = this->defaultFramebufferObject();
+    this->getCamera()->setPreDrawCallback(new CameraPreDrawCallback(fboInt));
 }
 
 osg::Vec2d Osg3dViewWithCamera::getNormalizedDeviceCoords(const int ix, const int iy)
