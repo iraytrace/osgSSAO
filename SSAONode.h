@@ -152,6 +152,7 @@ private:
 
     std::string stringFromResource(const char *resourceName);
     void addKernelUniformToStateSet(osg::StateSet *stateset, int kernelLength);
+    void removeAttachedCameras();
     void createFirstPassCamera();
     void createSecondPassCamera(int kernelLength);
     void createThirdPassCamera();
