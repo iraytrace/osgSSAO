@@ -67,6 +67,21 @@ void SSAONode::addKernelUniformToStateSet(osg::StateSet *stateset, int kernelLen
     stateset->addUniform(ssaoKernelUniform);
 }
 
+void SSAONode::removeAttachedCameras()
+{
+    int numChildren = this->getNumChildren();
+
+    for (int i = numChildren - 1; i >= 0; i--)
+    {
+        osg::Camera* cam = this->getChild(i)->asCamera();
+        if (cam)
+        {
+            this->removeChild(cam);
+            //delete &cam;
+        }
+    }
+}
+
 void SSAONode::createFirstPassCamera()
 {
     // Initialize programmable pipeline for multipass deferred rendering
@@ -242,6 +257,8 @@ void SSAONode::Initialize()
         m_noiseData = new osg::Vec3f[nsquared];
         generateNoise(m_noiseData, nsquared);
     }
+
+    removeAttachedCameras();
 
     createFirstPassCamera();
 
